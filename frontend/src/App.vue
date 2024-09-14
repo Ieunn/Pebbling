@@ -25,9 +25,13 @@ export default {
       loading.value = true
       try {
         const response = await axios.get('/api/getMeme')
-        meme.value = response.data
+        if (response.data) {
+          meme.value = response.data
+        } else {
+          console.error('No meme data received')
+        }
       } catch (error) {
-        console.error('Error fetching meme:', error)
+        console.error('Error fetching meme:', error.response ? error.response.data : error.message)
       }
       loading.value = false
     }
