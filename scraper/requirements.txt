@@ -6,3 +6,4 @@ python-dotenv
 selenium
 certifi
 boto3
+fake-useragent

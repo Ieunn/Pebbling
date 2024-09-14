@@ -1,4 +1,5 @@
 import boto3
+from botocore.client import Config
 from botocore.exceptions import ClientError
 import os
 
@@ -7,7 +8,8 @@ class StorageProvider:
         self.client = boto3.client('s3',
                                    endpoint_url=os.getenv('DO_SPACES_ENDPOINT'),
                                    aws_access_key_id=os.getenv('DO_SPACES_KEY'),
-                                   aws_secret_access_key=os.getenv('DO_SPACES_SECRET'))
+                                   aws_secret_access_key=os.getenv('DO_SPACES_SECRET'),
+                                   config=Config(signature_version='s3v4'))
         self.bucket = os.getenv('DO_SPACES_BUCKET')
 
     def upload_fileobj(self, file_obj, object_name):
@@ -29,7 +31,11 @@ class StorageProvider:
     def get_total_size(self):
         try:
             response = self.client.list_objects_v2(Bucket=self.bucket)
-            return sum(obj['Size'] for obj in response.get('Contents', []))
+            if 'Contents' in response:
+                return sum(obj['Size'] for obj in response['Contents'])
+            else:
+                print("Bucket is empty or does not exist")
+                return 0
         except ClientError as e:
             print(f"Error getting total size: {e}")
             return 0

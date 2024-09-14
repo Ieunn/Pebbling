@@ -1,9 +1,13 @@
 import os
+import random
+import requests
+import time
 from datetime import datetime, timedelta
 from pymongo import MongoClient
 from storage import StorageProvider
 import hashlib
 import certifi
+from fake_useragent import UserAgent
 
 class BaseScraper:
     def __init__(self):
@@ -13,12 +17,38 @@ class BaseScraper:
         self.storage = StorageProvider()
         self.max_storage = 5 * 1024 * 1024 * 1024  # 5GB
         self.meme_retention_days = 30
+        self.user_agent = UserAgent()
+        self.proxies = [
+            # TODO: Add proxy, example 'http://proxy1.example.com'
+        ]
 
     def hash_image(self, image_data):
         return hashlib.md5(image_data).hexdigest()
 
     def is_duplicate(self, image_hash):
         return self.memes_collection.find_one({'image_hash': image_hash}) is not None
+    
+    def random_delay(self, min_delay=1, max_delay=5):
+        time.sleep(random.uniform(min_delay, max_delay))
+    
+    def get_random_user_agent(self):
+        return self.user_agent.random
+
+    def get_random_proxy(self):
+        return random.choice(self.proxies)
+    
+    def get_with_retry(self, url, max_retries=3):
+        for _ in range(max_retries):
+            try:
+                headers = {'User-Agent': self.get_random_user_agent()}
+                proxy = self.get_random_proxy()
+                response = requests.get(url, headers=headers, proxies={'http': proxy, 'https': proxy}, timeout=10)
+                response.raise_for_status()
+                return response
+            except requests.RequestException as e:
+                print(f"Request failed: {e}")
+                self.random_delay()
+        return None
 
     def save_meme(self, title, image_url, source, original_url, image_data):
         image_hash = self.hash_image(image_data)
