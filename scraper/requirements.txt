@@ -1,0 +1,6 @@
+praw
+requests
+beautifulsoup4
+pymongo
+python-dotenv
+cloudinary
