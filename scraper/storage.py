@@ -14,7 +14,12 @@ class StorageProvider:
 
     def upload_fileobj(self, file_obj, object_name):
         try:
-            self.client.upload_fileobj(file_obj, self.bucket, object_name)
+            self.client.upload_fileobj(
+                file_obj, 
+                self.bucket, 
+                object_name,
+                ExtraArgs={'ACL': 'public-read'}
+            )
         except ClientError as e:
             print(f"Error uploading file object: {e}")
             return None
@@ -34,8 +39,12 @@ class StorageProvider:
             if 'Contents' in response:
                 return sum(obj['Size'] for obj in response['Contents'])
             else:
-                print("Bucket is empty or does not exist")
+                print("Bucket is empty or not accessible")
                 return 0
         except ClientError as e:
-            print(f"Error getting total size: {e}")
-            return 0
+            if e.response['Error']['Code'] == 'NoSuchKey':
+                print("Bucket is empty or not accessible")
+                return 0
+            else:
+                print(f"Error getting total size: {e}")
+                return 0

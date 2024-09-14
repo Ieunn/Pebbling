@@ -7,6 +7,8 @@ export default async function handler(req, res) {
       const memesCollection = db.collection('memes');
 
       const count = await memesCollection.countDocuments();
+      console.log(`Total memes in database: ${count}`);
+
       if (count === 0) {
         return res.status(404).json({ error: 'No memes found in the database' });
       }
@@ -15,6 +17,7 @@ export default async function handler(req, res) {
       const meme = await memesCollection.findOne({}, { skip: randomIndex });
 
       if (!meme) {
+        console.log('Failed to fetch a meme');
         return res.status(404).json({ error: 'Failed to fetch a meme' });
       }
 
