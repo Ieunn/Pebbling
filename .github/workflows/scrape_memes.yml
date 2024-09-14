@@ -30,9 +30,10 @@ jobs:
         REDDIT_USER_AGENT: ${{ secrets.REDDIT_USER_AGENT }}
         MONGODB_URI: ${{ secrets.MONGODB_URI }}
         MONGODB_DB: ${{ secrets.MONGODB_DB }}
-        CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
-        CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
-        CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+        DO_SPACES_ENDPOINT: ${{ secrets.DO_SPACES_ENDPOINT }}
+        DO_SPACES_KEY: ${{ secrets.DO_SPACES_KEY }}
+        DO_SPACES_SECRET: ${{ secrets.DO_SPACES_SECRET }}
+        DO_SPACES_BUCKET: ${{ secrets.DO_SPACES_BUCKET }}
       run: |
         cd scraper
         python reddit_scraper.py
@@ -41,9 +42,10 @@ jobs:
       env:
         MONGODB_URI: ${{ secrets.MONGODB_URI }}
         MONGODB_DB: ${{ secrets.MONGODB_DB }}
-        CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
-        CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
-        CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+        DO_SPACES_ENDPOINT: ${{ secrets.DO_SPACES_ENDPOINT }}
+        DO_SPACES_KEY: ${{ secrets.DO_SPACES_KEY }}
+        DO_SPACES_SECRET: ${{ secrets.DO_SPACES_SECRET }}
+        DO_SPACES_BUCKET: ${{ secrets.DO_SPACES_BUCKET }}
       run: |
         cd scraper
         python xhs_scraper.py

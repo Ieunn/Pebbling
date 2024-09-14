@@ -3,6 +3,6 @@ requests
 beautifulsoup4
 pymongo
 python-dotenv
-cloudinary
 selenium
 certifi
+boto3
