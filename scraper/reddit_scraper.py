@@ -2,7 +2,12 @@ import praw
 import requests
 import os
 from pymongo import MongoClient
-from dotenv import load_load_dotenv
+from datetime import datetime
+import cloudinary
+import cloudinary.uploader
+from dotenv import load_dotenv
+
+from data_management import create_ttl_index, lru_cache_update, clean_low_score_memes, manage_cloudinary_storage
 
 load_dotenv()
 
@@ -29,18 +34,27 @@ def scrape_reddit_memes():
     subreddit = reddit.subreddit('memes')
     for post in subreddit.hot(limit=50):
         if post.url.endswith(('.jpg', '.png', '.gif')):
-            # Upload image to Cloudinary
-            upload_result = cloudinary.uploader.upload(post.url)
-            
-            # Save meme data to MongoDB
-            meme_data = {
-                'title': post.title,
-                'imageUrl': upload_result['secure_url'],
-                'source': 'Reddit',
-                'originalUrl': post.url,
-                'createdAt': datetime.utcnow()
-            }
-            memes_collection.insert_one(meme_data)
+            # Check if meme already exists in database
+            existing_meme = memes_collection.find_one({'originalUrl': post.url})
+            if not existing_meme:
+                # Upload image to Cloudinary
+                upload_result = cloudinary.uploader.upload(post.url)
+                
+                # Save meme data to MongoDB
+                meme_data = {
+                    'title': post.title,
+                    'imageUrl': upload_result['secure_url'],
+                    'source': 'Reddit',
+                    'originalUrl': post.url,
+                    'createdAt': datetime.utcnow(),
+                    'score': post.score,
+                    'postTime': datetime.fromtimestamp(post.created_utc)
+                }
+                memes_collection.insert_one(meme_data)
+    lru_cache_update()
+    clean_low_score_memes()
+    manage_cloudinary_storage()
 
 if __name__ == '__main__':
+    create_ttl_index()
     scrape_reddit_memes()
