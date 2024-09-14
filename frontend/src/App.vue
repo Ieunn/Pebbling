@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <h1>Random Meme Delivery</h1>
+    <h1>Pebbling</h1>
     <MemeDisplay v-if="!loading" :meme="meme" />
     <p v-else>Loading...</p>
     <button @click="fetchMeme">Get Another Meme</button>
