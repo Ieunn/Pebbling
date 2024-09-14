@@ -35,7 +35,7 @@ class StorageProvider:
 
     def get_total_size(self):
         try:
-            response = self.client.list_objects_v2(Bucket=self.bucket)
+            response = self.client.list_objects_v2(Bucket=self.bucket, Prefix=os.getenv('DO_SPACES_BUCKET'))
             if 'Contents' in response:
                 return sum(obj['Size'] for obj in response['Contents'])
             else:
