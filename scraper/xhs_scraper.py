@@ -12,13 +12,14 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
+import certifi
 
 from data_management import create_ttl_index, lru_cache_update, manage_cloudinary_storage
 
 load_dotenv()
 
 # MongoDB connection
-client = MongoClient(os.getenv('MONGODB_URI'))
+client = MongoClient(os.getenv('MONGODB_URI'), tlsCAFile=certifi.where())
 db = client[os.getenv('MONGODB_DB')]
 memes_collection = db['memes']
 

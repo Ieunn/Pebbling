@@ -5,3 +5,4 @@ pymongo
 python-dotenv
 cloudinary
 selenium
+certifi
