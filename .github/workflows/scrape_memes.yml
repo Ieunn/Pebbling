@@ -45,4 +45,4 @@ jobs:
         CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
       run: |
         cd scraper
-        python xiaohongshu_scraper.py
+        python xhs_scraper.py
