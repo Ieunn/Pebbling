@@ -24,7 +24,7 @@ export default {
     const fetchMeme = async () => {
       loading.value = true
       try {
-        const response = await axios.get('/api/getMeme')
+        const response = await axios.get('/api/get_meme')
         if (response.data) {
           meme.value = response.data
         } else {
