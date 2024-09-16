@@ -1,4 +1,4 @@
-import { connectToDatabase } from '../backend/utils/db';
+import { connectToDatabase } from './db';
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
