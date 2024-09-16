@@ -5,7 +5,7 @@
     "type": "module",
     "workspaces": [
         "frontend",
-        "api"
+        "backend"
     ],
     "scripts": {
         "build": "cd frontend && npm run build"
