@@ -1,30 +1,32 @@
 <template>
-  <div class="meme-card" 
+  <div class="meme-card absolute inset-0 bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden touch-none transition-transform duration-300 ease-out"
        @touchstart="touchStart" 
        @touchmove="touchMove" 
        @touchend="touchEnd"
        :style="cardStyle">
-    <div v-if="!meme.imageUrl" class="loading-indicator">
-      <div class="spinner"></div>
+    <div v-if="!meme.imageUrl" class="loading-indicator flex justify-center items-center h-full">
+      <div class="spinner w-10 h-10 border-4 border-blue-200 border-t-4 border-t-blue-500 rounded-full animate-spin"></div>
     </div>
     <template v-else>
-      <img :src="meme.imageUrl" :alt="meme.title" @load="imageLoaded = true" :style="{ opacity: imageLoaded ? 1 : 0 }" />
-      <div class="meme-info">
-        <h2>{{ meme.title }}</h2>
-        <p>Source: {{ meme.source }}</p>
+      <img :src="meme.imageUrl" :alt="meme.title" @load="imageLoaded = true" 
+           class="w-full h-full object-cover transition-opacity duration-300"
+           :class="{ 'opacity-0': !imageLoaded, 'opacity-100': imageLoaded }" />
+      <div class="meme-info absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black to-transparent text-white">
+        <h2 class="text-xl font-semibold mb-1">{{ meme.title }}</h2>
+        <p class="text-sm opacity-80">Source: {{ meme.source }}</p>
       </div>
-      <div class="reaction-overlay" :style="overlayStyle">
-        <div v-if="offset > 0" class="reaction like">
-          <span class="emoji">😂</span>
-          <span class="text">LOL</span>
+      <div class="reaction-overlay absolute inset-0 flex justify-center items-center pointer-events-none" :style="overlayStyle">
+        <div v-if="offset > 0" class="reaction like text-green-500">
+          <span class="emoji text-6xl">😂</span>
+          <span class="text text-2xl font-bold">LOL</span>
         </div>
-        <div v-else-if="offset < 0" class="reaction dislike">
-          <span class="emoji">😒</span>
-          <span class="text">BRUH</span>
+        <div v-else-if="offset < 0" class="reaction dislike text-red-500">
+          <span class="emoji text-6xl">😒</span>
+          <span class="text text-2xl font-bold">BRUH</span>
         </div>
-        <div v-if="swipeUp" class="reaction favorite">
-          <span class="emoji">❤️</span>
-          <span class="text">LMAO</span>
+        <div v-if="swipeUp" class="reaction favorite text-yellow-500">
+          <span class="emoji text-6xl">❤️</span>
+          <span class="text text-2xl font-bold">LMAO</span>
         </div>
       </div>
     </template>
@@ -105,99 +107,13 @@ export default {
 </script>
 
 <style scoped>
-.meme-card {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  touch-action: none;
-  transition: transform 0.3s ease-out;
-}
-
-.meme-card img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: opacity 0.3s ease;
-}
-
-.meme-info {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 1rem;
-  background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
-  color: white;
-}
-
-.meme-info h2 {
-  font-size: 1.5rem;
-  margin: 0 0 0.5rem;
-}
-
-.meme-info p {
-  font-size: 1rem;
-  margin: 0;
-  opacity: 0.8;
-}
-
-.reaction-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  pointer-events: none;
-}
-
 .reaction {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-size: 2rem;
-  font-weight: bold;
+  @apply flex flex-col items-center text-4xl font-bold;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
 
 .reaction .emoji {
-  font-size: 4rem;
-}
-
-.like {
-  color: #4CAF50;
-}
-
-.dislike {
-  color: #F44336;
-}
-
-.favorite {
-  color: #FF9800;
-}
-
-.loading-indicator {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-}
-
-.spinner {
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #3498db;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  animation: spin 1s linear infinite;
+  @apply text-6xl;
 }
 
 @keyframes spin {
@@ -207,10 +123,10 @@ export default {
 
 @media (max-width: 768px) {
   .meme-info h2 {
-    font-size: 1.2rem;
+    @apply text-lg;
   }
   .meme-info p {
-    font-size: 0.9rem;
+    @apply text-xs;
   }
 }
 </style>

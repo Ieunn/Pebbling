@@ -1,25 +1,12 @@
 <template>
-    <div class="ad-container">
-      <p>Advertisement</p>
+    <div class="bg-gray-100 dark:bg-gray-700 rounded-lg shadow-md p-4 mt-8 text-center">
+      <p class="text-gray-600 dark:text-gray-300 text-sm">Advertisement</p>
       <!-- Add your ad content here -->
     </div>
-  </template>
-  
-  <script>
-  export default {
-    name: 'AdComponent'
-  }
-  </script>
-  
-  <style scoped>
-  .ad-container {
-    margin-top: 2rem;
-    padding: 1rem;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    background-color: #f9f9f9;
-    text-align: center;
-    font-size: 0.9rem;
-    color: #666;
-  }
-  </style>
+</template>
+
+<script>
+export default {
+name: 'AdComponent'
+}
+</script>
