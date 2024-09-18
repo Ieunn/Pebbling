@@ -45,7 +45,7 @@
 </template>
 
 <script>
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import axios from 'axios'
 import MemeCard from './components/MemeCard.vue'
 import AdComponent from './components/AdComponent.vue'
