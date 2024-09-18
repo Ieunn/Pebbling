@@ -37,15 +37,3 @@ jobs:
       run: |
         cd scraper
         python reddit_scraper.py
-
-    - name: Run Xiaohongshu scraper
-      env:
-        MONGODB_URI: ${{ secrets.MONGODB_URI }}
-        MONGODB_DB: ${{ secrets.MONGODB_DB }}
-        DO_SPACES_ENDPOINT: ${{ secrets.DO_SPACES_ENDPOINT }}
-        DO_SPACES_KEY: ${{ secrets.DO_SPACES_KEY }}
-        DO_SPACES_SECRET: ${{ secrets.DO_SPACES_SECRET }}
-        DO_SPACES_BUCKET: ${{ secrets.DO_SPACES_BUCKET }}
-      run: |
-        cd scraper
-        python xhs_scraper.py

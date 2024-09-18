@@ -1,3 +1,4 @@
+import hashlib
 import boto3
 from botocore.client import Config
 from botocore.exceptions import ClientError
@@ -32,6 +33,9 @@ class StorageProvider:
             self.client.delete_object(Bucket=self.bucket, Key=object_name)
         except ClientError as e:
             print(f"Error deleting file: {e}")
+    
+    def hash_image(self, image_data):
+        return hashlib.md5(image_data).hexdigest()
 
     def get_total_size(self):
         try:

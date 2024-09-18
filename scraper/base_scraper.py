@@ -5,7 +5,6 @@ import time
 from datetime import datetime, timedelta
 from pymongo import MongoClient
 from storage import StorageProvider
-import hashlib
 import certifi
 from fake_useragent import UserAgent
 
@@ -21,9 +20,6 @@ class BaseScraper:
         self.proxies = [
             # TODO: Add proxy, example 'http://proxy1.example.com'
         ]
-
-    def hash_image(self, image_data):
-        return hashlib.md5(image_data).hexdigest()
 
     def is_duplicate(self, image_hash):
         return self.memes_collection.find_one({'image_hash': image_hash}) is not None
@@ -51,7 +47,7 @@ class BaseScraper:
         return None
 
     def save_meme(self, title, image_url, source, original_url, image_data):
-        image_hash = self.hash_image(image_data)
+        image_hash = self.storage.hash_image(image_data)
         if self.is_duplicate(image_hash):
             return False
 
