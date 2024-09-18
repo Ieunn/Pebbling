@@ -80,7 +80,7 @@ export default {
       return cookies.includes('xhsTrackerId') || cookies.includes('websectokenx');
     }
 
-    const handleSourceChange = () => {
+    const handleSourceChange = async () => {
       if (selectedSource.value === 'Xiaohongshu') {
         memes.value = memes.value.filter((meme) => { return meme.source == 'Xiaohongshu' })
         if (checkXiaohongshuCookies()) {
@@ -94,7 +94,7 @@ export default {
           showAuthModal.value = true
         }
       } else {
-        resetAndFetchMemes()
+        await resetAndFetchMemes()
       }
     }
 
