@@ -33,3 +33,11 @@ export async function connectToDatabase() {
 
   return { client, db };
 }
+
+export async function getSources() {
+  const { db } = await connectToDatabase();
+  const memesCollection = db.collection('memes');
+
+  const sources = await memesCollection.distinct('source');
+  return sources;
+}
