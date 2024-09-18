@@ -2,11 +2,16 @@
   <div class="container">
     <header>
       <h1>Pebbling</h1>
-      <div class="source-selector">
-        <select v-model="selectedSource" @change="resetAndFetchMemes">
-          <option value="">All Sources</option>
-          <option v-for="source in sources" :key="source" :value="source">{{ source }}</option>
-        </select>
+      <div class="controls">
+        <div class="source-selector">
+          <select v-model="selectedSource" @change="resetAndFetchMemes">
+            <option value="">All Sources</option>
+            <option v-for="source in sources" :key="source" :value="source">{{ source }}</option>
+          </select>
+        </div>
+        <button @click="toggleDarkMode" class="dark-mode-toggle">
+          {{ isDarkMode ? '☀️' : '🌙' }}
+        </button>
       </div>
     </header>
     <main>
@@ -43,9 +48,10 @@ export default {
   },
   setup() {
     const memes = ref([])
-    const selectedSource = ref('')
+    const selectedSource = ref(localStorage.getItem('lastSelectedSource') || '')
     const sources = ref([])
     const viewedMemes = ref(JSON.parse(localStorage.getItem('viewedMemes') || '[]'))
+    const isDarkMode = ref(localStorage.getItem('darkMode') === 'true')
 
     const fetchMemes = async (count = 5) => {
       try {
@@ -57,7 +63,7 @@ export default {
           }
         })
         if (response.data && response.data.length > 0) {
-          memes.value.push(...response.data)
+          memes.value = [...memes.value, ...response.data]
         } else {
           console.error('No meme data received')
         }
@@ -69,6 +75,7 @@ export default {
     const resetAndFetchMemes = () => {
       memes.value = []
       fetchMemes()
+      localStorage.setItem('lastSelectedSource', selectedSource.value)
     }
 
     const fetchSources = async () => {
@@ -96,6 +103,11 @@ export default {
       }
     }
 
+    const toggleDarkMode = () => {
+      isDarkMode.value = !isDarkMode.value
+      localStorage.setItem('darkMode', isDarkMode.value)
+    }
+
     onMounted(() => {
       fetchMemes()
       fetchSources()
@@ -107,7 +119,9 @@ export default {
       memes,
       selectedSource,
       sources,
-      handleSwipe
+      handleSwipe,
+      isDarkMode,
+      toggleDarkMode
     }
   }
 }
@@ -139,6 +153,13 @@ h1 {
   margin-bottom: 1rem;
 }
 
+.controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
 .source-selector {
   max-width: 300px;
   margin: 0 auto;
@@ -150,6 +171,31 @@ h1 {
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 1rem;
+}
+
+.dark-mode-toggle {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.dark-mode {
+  background-color: #1a1a1a;
+  color: #f0f0f0;
+}
+
+.dark-mode .meme-card {
+  background-color: #2a2a2a;
+}
+
+.dark-mode .favorites-link {
+  background-color: #45a049;
+}
+
+.dark-mode .favorites-link:hover {
+  background-color: #3d8b3d;
 }
 
 main {
