@@ -235,8 +235,13 @@ export default {
       try {
         const response = await axios.get('/api/get_sources')
         sources.value = response.data
-        if (sources.value.length > 0 && !selectedSource.value) {
-          selectedSource.value = localStorage.getItem('lastSelectedSource') || sources.value[0]
+        if (sources.value.length > 0) {
+          if (!sources.value.includes('Xiaohongshu')) {
+            sources.value.push('Xiaohongshu')
+          }
+          if (!selectedSource.value) {
+            selectedSource.value = localStorage.getItem('lastSelectedSource') || sources.value[0]
+          }
         }
       } catch (error) {
         console.error('Error fetching sources:', error)
