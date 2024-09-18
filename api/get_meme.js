@@ -1,4 +1,5 @@
 import { connectToDatabase } from './db.js';
+import { ObjectId } from 'mongodb';
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
@@ -6,25 +7,29 @@ export default async function handler(req, res) {
       const { db } = await connectToDatabase();
       const memesCollection = db.collection('memes');
 
-      const count = await memesCollection.countDocuments();
-      console.log(`Total memes in database: ${count}`);
+      const { source, exclude, count = 5 } = req.query;
+      const excludeIds = exclude ? exclude.split(',').map(id => new ObjectId(id)) : [];
 
-      if (count === 0) {
-        return res.status(404).json({ error: 'No memes found in the database' });
+      const query = {
+        ...(source && { source }),
+        ...(excludeIds.length > 0 && { _id: { $nin: excludeIds } })
+      };
+
+      const memes = await memesCollection.aggregate([
+        { $match: query },
+        { $sample: { size: 100 } },
+        { $sort: { priority: -1 } },
+        { $limit: parseInt(count) }
+      ]).toArray();
+
+      if (memes.length === 0) {
+        return res.status(404).json({ error: 'No memes found matching the criteria' });
       }
 
-      const randomIndex = Math.floor(Math.random() * count);
-      const meme = await memesCollection.findOne({}, { skip: randomIndex });
-
-      if (!meme) {
-        console.log('Failed to fetch a meme');
-        return res.status(404).json({ error: 'Failed to fetch a meme' });
-      }
-
-      res.status(200).json(meme);
+      res.status(200).json(memes);
     } catch (error) {
       console.error('Server error:', error);
-      res.status(500).json({ error: 'Error fetching meme', details: error.message });
+      res.status(500).json({ error: 'Error fetching memes', details: error.message });
     }
   } else {
     res.status(405).json({ error: 'Method not allowed' });

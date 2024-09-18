@@ -1,47 +1,105 @@
 <template>
   <div class="container">
     <h1>Pebbling</h1>
-    <MemeDisplay v-if="!loading" :meme="meme" />
-    <p v-else>Loading...</p>
-    <button @click="fetchMeme">Get Another Meme</button>
+    <div class="source-selector">
+      <select v-model="selectedSource" @change="resetAndFetchMemes">
+        <option value="">All Sources</option>
+        <option v-for="source in sources" :key="source" :value="source">{{ source }}</option>
+      </select>
+    </div>
+    <div class="meme-stack">
+      <MemeCard 
+        v-for="(meme, index) in memes" 
+        :key="meme._id"
+        :meme="meme"
+        :style="{ zIndex: memes.length - index }"
+        @swipe="handleSwipe"
+      />
+    </div>
+    <router-link to="/favorites" class="favorites-link">My Favorites</router-link>
+    <AdComponent />
   </div>
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import axios from 'axios'
-import MemeDisplay from './components/MemeDisplay.vue'
+import MemeCard from './components/MemeCard.vue'
+import AdComponent from './components/AdComponent.vue'
 
 export default {
   name: 'App',
   components: {
-    MemeDisplay
+    MemeCard,
+    AdComponent
   },
   setup() {
-    const meme = ref(null)
-    const loading = ref(true)
+    const memes = ref([])
+    const selectedSource = ref('')
+    const sources = ref([])
+    const viewedMemes = ref(JSON.parse(localStorage.getItem('viewedMemes') || '[]'))
 
-    const fetchMeme = async () => {
-      loading.value = true
+    const fetchMemes = async (count = 5) => {
       try {
-        const response = await axios.get('/api/get_meme')
-        if (response.data) {
-          meme.value = response.data
+        const response = await axios.get('/api/get_memes', {
+          params: { 
+            source: selectedSource.value,
+            exclude: viewedMemes.value,
+            count: count
+          }
+        })
+        if (response.data && response.data.length > 0) {
+          memes.value.push(...response.data)
         } else {
           console.error('No meme data received')
         }
       } catch (error) {
-        console.error('Error fetching meme:', error.response ? error.response.data : error.message)
+        console.error('Error fetching memes:', error.response ? error.response.data : error.message)
       }
-      loading.value = false
     }
 
-    onMounted(fetchMeme)
+    const resetAndFetchMemes = () => {
+      memes.value = []
+      fetchMemes()
+    }
+
+    const fetchSources = async () => {
+      try {
+        const response = await axios.get('/api/get_sources')
+        sources.value = response.data
+      } catch (error) {
+        console.error('Error fetching sources:', error)
+      }
+    }
+
+    const handleSwipe = async (memeId, action) => {
+      viewedMemes.value.push(memeId)
+      localStorage.setItem('viewedMemes', JSON.stringify(viewedMemes.value))
+
+      try {
+        await axios.post('/api/update_meme_status', { memeId, action })
+      } catch (error) {
+        console.error(`Error updating meme status:`, error)
+      }
+
+      memes.value.shift()
+      if (memes.value.length < 3) {
+        fetchMemes(3)
+      }
+    }
+
+    onMounted(() => {
+      fetchMemes()
+      fetchSources()
+    })
+
+    watch(selectedSource, resetAndFetchMemes)
 
     return {
-      meme,
-      loading,
-      fetchMeme
+      memes,
+      selectedSource,
+      sources,
+      handleSwipe
     }
   }
 }
@@ -54,16 +112,34 @@ export default {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  padding: 0 0.5rem;
+  padding: 1rem;
   font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
 }
 h1 {
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
+  font-size: 2.5rem;
 }
-button {
+.source-selector {
+  margin-bottom: 1rem;
+  width: 100%;
+  max-width: 300px;
+}
+.favorites-link {
   margin-top: 1rem;
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
-  cursor: pointer;
+}
+.meme-stack {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  height: 500px;
+}
+
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2rem;
+  }
+  .meme-stack {
+    height: 400px;
+  }
 }
 </style>

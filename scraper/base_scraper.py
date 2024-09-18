@@ -74,7 +74,19 @@ class BaseScraper:
             self.storage.delete_file(meme['imageUrl'])
             self.memes_collection.delete_one({'_id': meme['_id']})
 
-        # LRU
+        # Update meme priorities
+        all_memes = self.memes_collection.find()
+        for meme in all_memes:
+            total_views = meme.get('likes', 0) + meme.get('dislikes', 0)
+            if total_views > 0:
+                like_ratio = meme.get('likes', 0) / total_views
+                priority = like_ratio * (1 + meme.get('favorites', 0) * 0.5)
+                self.memes_collection.update_one(
+                    {'_id': meme['_id']},
+                    {'$set': {'priority': priority}}
+                )
+
+        # LRU for storage management
         while self.get_total_storage() > self.max_storage:
             oldest_meme = self.memes_collection.find_one(sort=[('createdAt', 1)])
             if oldest_meme:
