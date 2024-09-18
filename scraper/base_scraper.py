@@ -61,7 +61,11 @@ class BaseScraper:
             'source': source,
             'originalUrl': original_url,
             'createdAt': datetime.utcnow(),
-            'image_hash': image_hash
+            'image_hash': image_hash,
+            'likes': 0,
+            'dislikes': 0,
+            'favorites': 0,
+            'priority': 0
         }
         self.memes_collection.insert_one(meme_data)
         return True

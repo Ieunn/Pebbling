@@ -20,10 +20,14 @@ export default async function handler(req, res) {
         updateObj.favorites = 1;
       }
 
-      await memesCollection.updateOne(
+      const result = await memesCollection.updateOne(
         { _id: new ObjectId(memeId) },
         { $inc: updateObj }
       );
+
+      if (result.modifiedCount === 0) {
+        return res.status(404).json({ error: 'Meme not found' });
+      }
 
       res.status(200).json({ message: `Meme ${action} successfully` });
     } catch (error) {
