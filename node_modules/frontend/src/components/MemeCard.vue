@@ -9,8 +9,10 @@
     </div>
     <template v-else>
       <img :src="meme.imageUrl" :alt="meme.title" @load="imageLoaded = true" :style="{ opacity: imageLoaded ? 1 : 0 }" />
-      <h2>{{ meme.title }}</h2>
-      <p>Source: {{ meme.source }}</p>
+      <div class="meme-info">
+        <h2>{{ meme.title }}</h2>
+        <p>Source: {{ meme.source }}</p>
+      </div>
       <div class="reaction-overlay" :style="overlayStyle">
         <div v-if="offset > 0" class="reaction like">
           <span class="emoji">😂</span>
@@ -111,25 +113,40 @@ export default {
   height: 100%;
   background-color: white;
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   touch-action: none;
+  transition: transform 0.3s ease-out;
 }
-img {
+
+.meme-card img {
   width: 100%;
-  height: 70%;
+  height: 100%;
   object-fit: cover;
   transition: opacity 0.3s ease;
 }
-h2 {
+
+.meme-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1rem;
+  background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+  color: white;
+}
+
+.meme-info h2 {
   font-size: 1.5rem;
-  margin: 1rem;
+  margin: 0 0 0.5rem;
 }
-p {
+
+.meme-info p {
   font-size: 1rem;
-  color: #666;
-  margin: 0 1rem 1rem;
+  margin: 0;
+  opacity: 0.8;
 }
+
 .reaction-overlay {
   position: absolute;
   top: 0;
@@ -141,6 +158,7 @@ p {
   align-items: center;
   pointer-events: none;
 }
+
 .reaction {
   display: flex;
   flex-direction: column;
@@ -149,24 +167,30 @@ p {
   font-weight: bold;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
+
 .reaction .emoji {
   font-size: 4rem;
 }
+
 .like {
   color: #4CAF50;
 }
+
 .dislike {
   color: #F44336;
 }
+
 .favorite {
   color: #FF9800;
 }
+
 .loading-indicator {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100%;
 }
+
 .spinner {
   border: 4px solid #f3f3f3;
   border-top: 4px solid #3498db;
@@ -175,16 +199,17 @@ p {
   height: 40px;
   animation: spin 1s linear infinite;
 }
+
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
 
 @media (max-width: 768px) {
-  h2 {
+  .meme-info h2 {
     font-size: 1.2rem;
   }
-  p {
+  .meme-info p {
     font-size: 0.9rem;
   }
 }

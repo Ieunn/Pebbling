@@ -1,23 +1,31 @@
 <template>
   <div class="container">
-    <h1>Pebbling</h1>
-    <div class="source-selector">
-      <select v-model="selectedSource" @change="resetAndFetchMemes">
-        <option value="">All Sources</option>
-        <option v-for="source in sources" :key="source" :value="source">{{ source }}</option>
-      </select>
-    </div>
-    <div class="meme-stack">
-      <MemeCard 
-        v-for="(meme, index) in memes" 
-        :key="meme._id"
-        :meme="meme"
-        :style="{ zIndex: memes.length - index }"
-        @swipe="handleSwipe"
-      />
-    </div>
-    <router-link to="/favorites" class="favorites-link">My Favorites</router-link>
-    <AdComponent />
+    <header>
+      <h1>Pebbling</h1>
+      <div class="source-selector">
+        <select v-model="selectedSource" @change="resetAndFetchMemes">
+          <option value="">All Sources</option>
+          <option v-for="source in sources" :key="source" :value="source">{{ source }}</option>
+        </select>
+      </div>
+    </header>
+    <main>
+      <div class="meme-stack">
+        <TransitionGroup name="meme-card">
+          <MemeCard 
+            v-for="(meme, index) in memes" 
+            :key="meme._id"
+            :meme="meme"
+            :style="{ zIndex: memes.length - index }"
+            @swipe="handleSwipe"
+          />
+        </TransitionGroup>
+      </div>
+    </main>
+    <footer>
+      <router-link to="/favorites" class="favorites-link">My Favorites</router-link>
+      <AdComponent />
+    </footer>
   </div>
 </template>
 
@@ -106,32 +114,87 @@ export default {
 </script>
 
 <style>
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background-color: #f0f2f5;
+  color: #333;
+}
+
 .container {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
   min-height: 100vh;
   padding: 1rem;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
 }
+
+header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
 h1 {
-  margin-bottom: 1rem;
   font-size: 2.5rem;
-}
-.source-selector {
+  color: #4a4a4a;
   margin-bottom: 1rem;
-  width: 100%;
+}
+
+.source-selector {
   max-width: 300px;
+  margin: 0 auto;
 }
-.favorites-link {
-  margin-top: 1rem;
+
+.source-selector select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
 }
+
+main {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .meme-stack {
   position: relative;
   width: 100%;
   max-width: 500px;
   height: 500px;
+}
+
+footer {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.favorites-link {
+  display: inline-block;
+  margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: #4CAF50;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.favorites-link:hover {
+  background-color: #45a049;
+}
+
+.meme-card-enter-active,
+.meme-card-leave-active {
+  transition: all 0.5s ease;
+}
+
+.meme-card-enter-from,
+.meme-card-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
 }
 
 @media (max-width: 768px) {
