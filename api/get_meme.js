@@ -18,11 +18,16 @@ export default async function handler(req, res) {
       const memes = await memesCollection.aggregate([
         { $match: query },
         { $sample: { size: 100 } },
+        { $addFields: { priority: { $ifNull: ["$priority", 0] } } },
         { $sort: { priority: -1 } },
         { $limit: parseInt(count) }
       ]).toArray();
 
+      console.log('Query:', query);
+      console.log('Retrieved memes:', memes);
+
       if (memes.length === 0) {
+        console.log('No memes found. Database state:', await memesCollection.stats());
         return res.status(404).json({ error: 'No memes found matching the criteria' });
       }
 

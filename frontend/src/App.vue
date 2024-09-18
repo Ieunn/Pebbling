@@ -72,6 +72,8 @@ export default {
     }
     
     const fetchMemes = async (count = 5) => {
+      loading.value = true;
+      error.value = null;
       try {
         const response = await axios.get('/api/get_memes', {
           params: { 
@@ -79,16 +81,20 @@ export default {
             exclude: viewedMemes.value,
             count: count
           }
-        })
+        });
+        console.log('API response:', response.data);
         if (response.data && response.data.length > 0) {
-          memes.value = response.data
+          memes.value = response.data;
         } else {
-          console.error('No meme data received')
+          error.value = 'No memes available';
         }
-      } catch (error) {
-        console.error('Error fetching memes:', error.response ? error.response.data : error.message)
+      } catch (err) {
+        console.error('Detailed error:', err);
+        error.value = 'Error fetching memes: ' + (err.response?.data?.error || err.message);
+      } finally {
+        loading.value = false;
       }
-    }
+    };
 
     const resetAndFetchMemes = () => {
       memes.value = []
