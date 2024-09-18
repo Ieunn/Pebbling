@@ -21,12 +21,16 @@
       </header>
       <main class="mb-8">
         <div class="relative w-full max-w-md mx-auto h-96">
-          <TransitionGroup name="meme-card" tag="div" class="absolute inset-0">
+          <div v-if="loading" class="absolute inset-0 flex items-center justify-center">
+            <p>Loading memes...</p>
+          </div>
+          <TransitionGroup v-else name="meme-card" tag="div" class="absolute inset-0">
             <MemeCard 
-              v-for="(meme, index) in memes" 
-              :key="meme._id"
+              v-for="(meme, index) in displayedMemes" 
+              :key="meme._id || 'empty'"
               :meme="meme"
-              :style="{ zIndex: memes.length - index }"
+              :is-empty="memes.length === 0"
+              :style="{ zIndex: displayedMemes.length - index }"
               @swipe="handleSwipe"
             />
           </TransitionGroup>
@@ -58,6 +62,15 @@ export default {
     const sources = ref([])
     const viewedMemes = ref(JSON.parse(localStorage.getItem('viewedMemes') || '[]'))
     const isDarkMode = ref(localStorage.getItem('darkMode') === 'true')
+    const loading = ref(true)
+    const error = ref(null)
+
+    const displayedMemes = computed(() => {
+      if (memes.value.length === 0) {
+        return [{ _id: 'empty', isEmpty: true }]
+      }
+      return memes.value
+    })
 
     const fetchSources = async () => {
       try {
@@ -72,8 +85,8 @@ export default {
     }
     
     const fetchMemes = async (count = 5) => {
-      loading.value = true;
-      error.value = null;
+      loading.value = true
+      error.value = null
       try {
         const response = await axios.get('/api/get_memes', {
           params: { 
@@ -81,20 +94,19 @@ export default {
             exclude: viewedMemes.value,
             count: count
           }
-        });
-        console.log('API response:', response.data);
+        })
         if (response.data && response.data.length > 0) {
-          memes.value = response.data;
+          memes.value = response.data
         } else {
-          error.value = 'No memes available';
+          memes.value = []
         }
       } catch (err) {
-        console.error('Detailed error:', err);
-        error.value = 'Error fetching memes: ' + (err.response?.data?.error || err.message);
+        console.error('Error fetching memes:', err)
+        error.value = 'Error fetching memes: ' + (err.response?.data?.error || err.message)
       } finally {
-        loading.value = false;
+        loading.value = false
       }
-    };
+    }
 
     const resetAndFetchMemes = () => {
       memes.value = []
@@ -103,13 +115,15 @@ export default {
     }
 
     const handleSwipe = async (memeId, action) => {
-      viewedMemes.value.push(memeId)
-      localStorage.setItem('viewedMemes', JSON.stringify(viewedMemes.value))
+      if (memeId !== 'empty') {
+        viewedMemes.value.push(memeId)
+        localStorage.setItem('viewedMemes', JSON.stringify(viewedMemes.value))
 
-      try {
-        await axios.post('/api/update_meme_status', { memeId, action })
-      } catch (error) {
-        console.error(`Error updating meme status:`, error)
+        try {
+          await axios.post('/api/update_meme_status', { memeId, action })
+        } catch (error) {
+          console.error(`Error updating meme status:`, error)
+        }
       }
 
       memes.value.shift()
@@ -121,9 +135,17 @@ export default {
     const toggleDarkMode = () => {
       isDarkMode.value = !isDarkMode.value
       localStorage.setItem('darkMode', isDarkMode.value)
+      if (isDarkMode.value) {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
     }
 
     onMounted(() => {
+      if (isDarkMode.value) {
+        document.documentElement.classList.add('dark')
+      }
       fetchSources().then(() => {
         fetchMemes()
       })
@@ -133,11 +155,14 @@ export default {
 
     return {
       memes,
+      displayedMemes,
       selectedSource,
       sources,
       handleSwipe,
       isDarkMode,
-      toggleDarkMode
+      toggleDarkMode,
+      loading,
+      error
     }
   }
 }

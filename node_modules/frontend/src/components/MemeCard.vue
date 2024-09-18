@@ -4,31 +4,37 @@
        @touchmove="touchMove" 
        @touchend="touchEnd"
        :style="cardStyle">
-    <div v-if="!meme.imageUrl" class="loading-indicator flex justify-center items-center h-full">
-      <div class="spinner w-10 h-10 border-4 border-blue-200 border-t-4 border-t-blue-500 rounded-full animate-spin"></div>
+    <div v-if="isEmpty" class="flex flex-col items-center justify-center h-full p-4 text-center">
+      <p class="text-xl font-semibold mb-2">No more memes available!</p>
+      <p class="text-sm text-gray-600 dark:text-gray-400">Check back later for new memes</p>
     </div>
     <template v-else>
-      <img :src="meme.imageUrl" :alt="meme.title" @load="imageLoaded = true" 
-           class="w-full h-full object-cover transition-opacity duration-300"
-           :class="{ 'opacity-0': !imageLoaded, 'opacity-100': imageLoaded }" />
-      <div class="meme-info absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black to-transparent text-white">
-        <h2 class="text-xl font-semibold mb-1">{{ meme.title }}</h2>
-        <p class="text-sm opacity-80">Source: {{ meme.source }}</p>
+      <div v-if="!meme.imageUrl" class="loading-indicator flex justify-center items-center h-full">
+        <div class="spinner w-10 h-10 border-4 border-blue-200 border-t-4 border-t-blue-500 rounded-full animate-spin"></div>
       </div>
-      <div class="reaction-overlay absolute inset-0 flex justify-center items-center pointer-events-none" :style="overlayStyle">
-        <div v-if="offset > 0" class="reaction like text-green-500">
-          <span class="emoji text-6xl">😂</span>
-          <span class="text text-2xl font-bold">LOL</span>
+      <template v-else>
+        <img :src="meme.imageUrl" :alt="meme.title" @load="imageLoaded = true" 
+             class="w-full h-full object-cover transition-opacity duration-300"
+             :class="{ 'opacity-0': !imageLoaded, 'opacity-100': imageLoaded }" />
+        <div class="meme-info absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black to-transparent text-white">
+          <h2 class="text-xl font-semibold mb-1">{{ meme.title }}</h2>
+          <p class="text-sm opacity-80">Source: {{ meme.source }}</p>
         </div>
-        <div v-else-if="offset < 0" class="reaction dislike text-red-500">
-          <span class="emoji text-6xl">😒</span>
-          <span class="text text-2xl font-bold">BRUH</span>
+        <div class="reaction-overlay absolute inset-0 flex justify-center items-center pointer-events-none" :style="overlayStyle">
+          <div v-if="offset > 0" class="reaction like text-green-500">
+            <span class="emoji text-6xl">😂</span>
+            <span class="text text-2xl font-bold">LOL</span>
+          </div>
+          <div v-else-if="offset < 0" class="reaction dislike text-red-500">
+            <span class="emoji text-6xl">😒</span>
+            <span class="text text-2xl font-bold">BRUH</span>
+          </div>
+          <div v-if="swipeUp" class="reaction favorite text-yellow-500">
+            <span class="emoji text-6xl">❤️</span>
+            <span class="text text-2xl font-bold">LMAO</span>
+          </div>
         </div>
-        <div v-if="swipeUp" class="reaction favorite text-yellow-500">
-          <span class="emoji text-6xl">❤️</span>
-          <span class="text text-2xl font-bold">LMAO</span>
-        </div>
-      </div>
+      </template>
     </template>
   </div>
 </template>
@@ -42,6 +48,10 @@ export default {
     meme: {
       type: Object,
       required: true
+    },
+    isEmpty: {
+      type: Boolean,
+      default: false
     }
   },
   setup(props, { emit }) {
@@ -81,6 +91,12 @@ export default {
     }
 
     const touchEnd = () => {
+      if (props.isEmpty) {
+        offset.value = 0
+        swipeUp.value = false
+        return
+      }
+
       if (Math.abs(offset.value) > 100) {
         const action = offset.value > 0 ? 'like' : 'dislike'
         emit('swipe', props.meme._id, action)
