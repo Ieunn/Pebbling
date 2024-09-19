@@ -72,13 +72,13 @@ export const useMemeStore = defineStore('meme', {
         return cookies.includes('xhsTrackerId') || cookies.includes('websectokenx')
     },
     async scrapeMemes() {
-        if (memes.value.length > 0) {
+        if (this.memes.length > 0) {
             console.log('Still have unviewed memes, skipping scraping');
             return;
         }
     
-        loading.value = true;
-        error.value = null;
+        this.loading = true;
+        this.error = null;
         try {
             const scrapedMemes = await scrapeXiaohongshuMemes();
             if (scrapedMemes.length > 0) {
@@ -87,7 +87,7 @@ export const useMemeStore = defineStore('meme', {
                     console.log('Rate limit exceeded, fetching from server');
                     await fetchMemes();
                 } else {
-                    memes.value = response.data;
+                    this.memes = response.data;
                 }
             } else {
                 console.log('No new memes found, fetching from server');
@@ -98,11 +98,11 @@ export const useMemeStore = defineStore('meme', {
                 console.log('Rate limit exceeded, fetching from server');
             } else {
                 console.error('Error scraping memes:', err);
-                error.value = 'Error scraping memes: ' + (err.response?.data?.error || err.message);
+                this.error = 'Error scraping memes: ' + (err.response?.data?.error || err.message);
             }
             await fetchMemes();
         } finally {
-            loading.value = false;
+            this.loading = false;
         }
     },
     async scrapeXiaohongshuMemes() {
@@ -175,8 +175,8 @@ export const useMemeStore = defineStore('meme', {
     },
     async handleSwipe(memeId, action) {
         if (memeId !== 'empty') {
-            viewedMemes.value.push(memeId)
-            localStorage.setItem('viewedMemes', JSON.stringify(viewedMemes.value))
+            this.viewedMemes.push(memeId)
+            localStorage.setItem('viewedMemes', JSON.stringify(this.viewedMemes))
 
             try {
                 let favorites = JSON.parse(localStorage.getItem('favorites') || '[]')
@@ -197,9 +197,9 @@ export const useMemeStore = defineStore('meme', {
         }
 
         setTimeout(() => {
-            memes.value.shift()
-            if (memes.value.length < 3) {
-            fetchMemes(3)
+            this.memes.shift()
+            if (this.memes.length < 3) {
+                fetchMemes(3)
             }
         }, 300)
     },
