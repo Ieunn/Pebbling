@@ -7,8 +7,7 @@
        @mousemove="mouseMove"
        @mouseup="mouseUp"
        @mouseleave="mouseUp"
-       :style="cardStyle"
-       :data-direction="swipeDirection">
+       :style="cardStyle">
     <div v-if="isEmpty" class="flex flex-col items-center justify-center h-full p-4 text-center">
       <p class="text-xl font-semibold mb-2">No more memes available!</p>
       <p class="text-sm text-gray-600 dark:text-gray-400">Check back later for new memes</p>
@@ -26,15 +25,15 @@
           <p class="text-sm opacity-80">Source: {{ meme.source }}</p>
         </div>
         <div class="reaction-overlay absolute inset-0 flex justify-center items-center pointer-events-none" :style="overlayStyle">
-          <div v-if="offset > 0" class="reaction like text-green-500">
+          <div v-if="currentAction === 'like'" class="reaction like text-green-500">
             <span class="emoji text-6xl">😂</span>
             <span class="text text-2xl font-bold">LOL</span>
           </div>
-          <div v-else-if="offset < 0" class="reaction dislike text-red-500">
+          <div v-else-if="currentAction === 'dislike'" class="reaction dislike text-red-500">
             <span class="emoji text-6xl">😒</span>
             <span class="text text-2xl font-bold">BRUH</span>
           </div>
-          <div v-if="swipeUp" class="reaction favorite text-yellow-500">
+          <div v-else-if="currentAction === 'favorite'" class="reaction favorite text-yellow-500">
             <span class="emoji text-6xl">❤️</span>
             <span class="text text-2xl font-bold">LMAO</span>
           </div>
@@ -65,6 +64,16 @@ export default {
     let startX = 0
     let startY = 0
     let isDragging = false
+
+    const currentAction = computed(() => {
+      const absX = Math.abs(offset.value.x)
+      const absY = Math.abs(offset.value.y)
+      if (absX > absY) {
+        return offset.value.x > 50 ? 'dislike' : (offset.value.x < -50 ? 'like' : '')
+      } else {
+        return offset.value.y > 50 ? 'favorite' : ''
+      }
+    })
 
     const cardStyle = computed(() => ({
       transform: `translate(${offset.value.x}px, ${-offset.value.y}px) rotate(${offset.value.x * 0.1}deg)`,
@@ -133,15 +142,7 @@ export default {
 
       const distance = Math.sqrt(Math.pow(offset.value.x, 2) + Math.pow(offset.value.y, 2))
       if (distance > 100) {
-        let action, direction
-        if (Math.abs(offset.value.x) > Math.abs(offset.value.y)) {
-          action = offset.value.x > 0 ? 'like' : 'dislike'
-          direction = offset.value.x > 0 ? 'right' : 'left'
-        } else {
-          action = 'favorite'
-          direction = 'up'
-        }
-        emit('swipe', props.meme._id, action, direction)
+        emit('swipe', props.meme._id, currentAction.value)
       } else {
         offset.value = { x: 0, y: 0 }
       }

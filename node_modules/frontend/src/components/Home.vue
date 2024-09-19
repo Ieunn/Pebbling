@@ -1,47 +1,44 @@
 <template>
-    <div class="container mx-auto px-4 py-8">
-        <header class="mb-8">
-            <h1 class="text-4xl font-bold text-center mb-4">Pebbling</h1>
-            <div class="flex justify-center items-center space-x-4">
-                <div class="relative">
-                    <select v-model="selectedSource" @change="handleSourceChange" class="appearance-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md py-2 pl-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="">All Sources</option>
-                        <option v-for="source in sources" :key="source" :value="source">{{ source }}</option>
-                    </select>
-                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-300">
-                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-                    </div>
-                </div>
-                <div v-if="showAuthModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                    <div class="bg-white p-6 rounded-lg">
-                        <h2 class="text-xl font-bold mb-4">授权小红书账号</h2>
-                        <p class="mb-4">为了获取小红书的内容，我们需要您的授权。请点击下面的按钮登录小红书。</p>
-                        <button @click="authXiaohongshu" class="bg-red-500 text-white px-4 py-2 rounded">登录小红书</button>
-                        <button @click="cancelAuth" class="ml-4 text-gray-600">取消</button>
-                    </div>
-                </div>
+    <div class="flex flex-col h-screen">
+      <header class="mb-4">
+        <div class="flex justify-center items-center space-x-4">
+          <div class="relative">
+            <select v-model="selectedSource" @change="handleSourceChange" class="appearance-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md py-2 pl-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">All Sources</option>
+              <option v-for="source in sources" :key="source" :value="source">{{ source }}</option>
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-300">
+              <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
             </div>
-        </header>
-        <main class="mb-8">
-            <div class="relative w-full mx-auto flex justify-center items-center" style="height: 80vh;">
-            <div v-if="loading" class="absolute inset-0 flex items-center justify-center">
-                <p>Loading memes...</p>
-            </div>
-            <TransitionGroup v-else name="meme-card" tag="div" class="relative" style="aspect-ratio: 3/4; width: 90%; max-width: 400px; max-height: 100%;">
-                <MemeCard 
-                v-for="(meme, index) in displayedMemes" 
-                :key="meme._id || 'empty'"
-                :meme="meme"
-                :is-empty="memes.length === 0"
-                :style="{ zIndex: displayedMemes.length - index }"
-                @swipe="handleSwipe"
-                />
-            </TransitionGroup>
-            </div>
-        </main>
-        <footer class="text-center">
-            <AdComponent class="mt-4" />
-        </footer>
+          </div>
+        </div>
+      </header>
+      <main class="flex-grow relative">
+        <div v-if="loading" class="absolute inset-0 flex items-center justify-center">
+          <p>Loading memes...</p>
+        </div>
+        <TransitionGroup v-else name="meme-card" tag="div" class="absolute inset-0">
+          <MemeCard 
+            v-for="(meme, index) in displayedMemes" 
+            :key="meme._id || 'empty'"
+            :meme="meme"
+            :is-empty="memes.length === 0"
+            :style="{ zIndex: displayedMemes.length - index }"
+            @swipe="handleSwipe"
+          />
+        </TransitionGroup>
+      </main>
+      <footer class="mt-4 text-center">
+        <AdComponent />
+      </footer>
+    </div>
+    <div v-if="showAuthModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white p-6 rounded-lg">
+        <h2 class="text-xl font-bold mb-4">授权小红书账号</h2>
+        <p class="mb-4">为了获取小红书的内容，我们需要您的授权。请点击下面的按钮登录小红书。</p>
+        <button @click="authXiaohongshu" class="bg-red-500 text-white px-4 py-2 rounded">登录小红书</button>
+        <button @click="cancelAuth" class="ml-4 text-gray-600">取消</button>
+      </div>
     </div>
   </template>
   
@@ -270,28 +267,36 @@
         localStorage.setItem('lastSelectedSource', selectedSource.value)
       }
   
-      const handleSwipe = async (memeId, action, direction) => {
+      const handleSwipe = async (memeId, action) => {
         if (memeId !== 'empty') {
-          viewedMemes.value.push(memeId)
-          localStorage.setItem('viewedMemes', JSON.stringify(viewedMemes.value))
-  
-          try {
-            await axios.post('/api/update_meme_status', { memeId, action })
-            if (action === 'favorite') {
-              console.log('Meme added to favorites')
+            viewedMemes.value.push(memeId)
+            localStorage.setItem('viewedMemes', JSON.stringify(viewedMemes.value))
+
+            try {
+                let favorites = JSON.parse(localStorage.getItem('favorites') || '[]')
+                if (action === 'favorite') {
+                    if (!favorites.includes(memeId)) {
+                        favorites.push(memeId)
+                        console.log('Meme added to favorites')
+                    }
+                } else if (action === 'dislike') {
+                    favorites = favorites.filter(id => id !== memeId)
+                }
+                localStorage.setItem('favorites', JSON.stringify(favorites))
+
+                await axios.post('/api/update_meme_status', { memeId, action })
+            } catch (error) {
+                console.error(`Error updating meme status:`, error)
             }
-          } catch (error) {
-            console.error(`Error updating meme status:`, error)
-          }
         }
-  
+
         setTimeout(() => {
-          memes.value.shift()
-          if (memes.value.length < 3) {
+            memes.value.shift()
+            if (memes.value.length < 3) {
             fetchMemes(3)
-          }
+            }
         }, 300)
-      }
+        }
   
       onMounted(() => {
         fetchSources().then(() => {
