@@ -7,7 +7,8 @@
        @mousemove="mouseMove"
        @mouseup="mouseUp"
        @mouseleave="mouseUp"
-       :style="cardStyle">
+       :style="cardStyle"
+       :data-direction="swipeDirection">
     <div v-if="isEmpty" class="flex flex-col items-center justify-center h-full p-4 text-center">
       <p class="text-xl font-semibold mb-2">No more memes available!</p>
       <p class="text-sm text-gray-600 dark:text-gray-400">Check back later for new memes</p>
@@ -59,21 +60,29 @@ export default {
     }
   },
   setup(props, { emit }) {
-    const offset = ref(0)
-    const swipeUp = ref(false)
+    const offset = ref({ x: 0, y: 0 })
     const imageLoaded = ref(false)
     let startX = 0
     let startY = 0
     let isDragging = false
 
     const cardStyle = computed(() => ({
-      transform: `translateX(${offset.value}px) translateY(${-swipeUp.value}px) rotate(${offset.value * 0.1}deg)`,
-      transition: (offset.value === 0 && swipeUp.value === 0) ? 'transform 0.3s ease-out' : 'none'
+      transform: `translate(${offset.value.x}px, ${-offset.value.y}px) rotate(${offset.value.x * 0.1}deg)`,
+      transition: (offset.value.x === 0 && offset.value.y === 0) ? 'transform 0.3s ease-out' : 'none'
     }))
 
     const overlayStyle = computed(() => ({
-      opacity: Math.min(Math.max(Math.abs(offset.value) / 100, swipeUp.value / 100), 1)
+      opacity: Math.min(Math.sqrt(Math.pow(offset.value.x, 2) + Math.pow(offset.value.y, 2)) / 100, 1)
     }))
+
+    const swipeDirection = computed(() => {
+      const absX = Math.abs(offset.value.x)
+      const absY = Math.abs(offset.value.y)
+      if (absX > absY && offset.value.x > 0) return 'right'
+      if (absX > absY && offset.value.x < 0) return 'left'
+      if (absY > absX && offset.value.y > 0) return 'up'
+      return ''
+    })
 
     const touchStart = (event) => {
       startX = event.touches[0].clientX
@@ -113,39 +122,37 @@ export default {
       const deltaX = currentX - startX
       const deltaY = startY - currentY
 
-      if (Math.abs(deltaX) > Math.abs(deltaY)) {
-        offset.value = deltaX
-        swipeUp.value = 0
-      } else {
-        offset.value = 0
-        swipeUp.value = deltaY
-      }
+      offset.value = { x: deltaX, y: deltaY }
     }
 
     const handleEnd = () => {
       if (props.isEmpty) {
-        offset.value = 0
-        swipeUp.value = 0
+        offset.value = { x: 0, y: 0 }
         return
       }
 
-      if (Math.abs(offset.value) > 100) {
-        const action = offset.value > 0 ? 'like' : 'dislike'
-        emit('swipe', props.meme._id, action)
-      } else if (swipeUp.value > 100) {
-        emit('swipe', props.meme._id, 'favorite')
+      const distance = Math.sqrt(Math.pow(offset.value.x, 2) + Math.pow(offset.value.y, 2))
+      if (distance > 100) {
+        let action, direction
+        if (Math.abs(offset.value.x) > Math.abs(offset.value.y)) {
+          action = offset.value.x > 0 ? 'like' : 'dislike'
+          direction = offset.value.x > 0 ? 'right' : 'left'
+        } else {
+          action = 'favorite'
+          direction = 'up'
+        }
+        emit('swipe', props.meme._id, action, direction)
       } else {
-        offset.value = 0
-        swipeUp.value = 0
+        offset.value = { x: 0, y: 0 }
       }
     }
 
     return {
       offset,
-      swipeUp,
       imageLoaded,
       cardStyle,
       overlayStyle,
+      swipeDirection,
       touchStart,
       touchMove,
       touchEnd,
@@ -159,9 +166,8 @@ export default {
 
 <style scoped>
 .meme-card {
-  aspect-ratio: 3/4;
-  max-width: 90vw;
-  max-height: 80vh;
+  width: 100%;
+  height: 100%;
 }
 
 .reaction {
