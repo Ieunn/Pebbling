@@ -18,28 +18,32 @@
       </div>
       <template v-else>
         <img :src="meme.imageUrl" :alt="meme.title" @load="imageLoaded = true" 
-             class="w-full h-full object-cover transition-opacity duration-300"
-             :class="{ 'opacity-0': !imageLoaded, 'opacity-100': imageLoaded }" />
+             class="w-full h-full object-contain transition-opacity duration-300"
+             :class="{ 'opacity-0': !imageLoaded, 'opacity-100': imageLoaded }"
+             @click="showFullImage = true" />
         <div class="meme-info absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black to-transparent text-white">
           <h2 class="text-xl font-semibold mb-1">{{ meme.title }}</h2>
           <p class="text-sm opacity-80">Source: {{ meme.source }}</p>
         </div>
-        <div class="reaction-overlay absolute inset-0 flex justify-center items-center pointer-events-none" :style="overlayStyle">
-          <div v-if="currentAction === 'like'" class="reaction like text-green-500">
-            <span class="emoji text-6xl">😂</span>
-            <span class="text text-2xl font-bold">LOL</span>
-          </div>
-          <div v-else-if="currentAction === 'dislike'" class="reaction dislike text-red-500">
-            <span class="emoji text-6xl">😒</span>
-            <span class="text text-2xl font-bold">BRUH</span>
-          </div>
-          <div v-else-if="currentAction === 'favorite'" class="reaction favorite text-yellow-500">
-            <span class="emoji text-6xl">❤️</span>
-            <span class="text text-2xl font-bold">LMAO</span>
-          </div>
-        </div>
       </template>
     </template>
+    <div class="reaction-overlay absolute inset-0 flex justify-center items-center pointer-events-none" :style="overlayStyle">
+      <div v-if="currentAction === 'like'" class="reaction like text-green-500">
+        <span class="emoji text-6xl">😂</span>
+        <span class="text text-2xl font-bold">LOL</span>
+      </div>
+      <div v-else-if="currentAction === 'dislike'" class="reaction dislike text-red-500">
+        <span class="emoji text-6xl">😒</span>
+        <span class="text text-2xl font-bold">BRUH</span>
+      </div>
+      <div v-else-if="currentAction === 'favorite'" class="reaction favorite text-yellow-500">
+        <span class="emoji text-6xl">❤️</span>
+        <span class="text text-2xl font-bold">LMAO</span>
+      </div>
+    </div>
+    <div v-if="showFullImage" class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50" @click="showFullImage = false">
+      <img :src="meme.imageUrl" :alt="meme.title" class="max-w-full max-h-full object-contain" />
+    </div>
   </div>
 </template>
 
@@ -61,6 +65,7 @@ export default {
   setup(props, { emit }) {
     const offset = ref({ x: 0, y: 0 })
     const imageLoaded = ref(false)
+    const showFullImage = ref(false)
     let startX = 0
     let startY = 0
     let isDragging = false
@@ -69,7 +74,7 @@ export default {
       const absX = Math.abs(offset.value.x)
       const absY = Math.abs(offset.value.y)
       if (absX > absY) {
-        return offset.value.x > 50 ? 'dislike' : (offset.value.x < -50 ? 'like' : '')
+        return offset.value.x > 50 ? 'like' : (offset.value.x < -50 ? 'dislike' : '')
       } else {
         return offset.value.y > 50 ? 'favorite' : ''
       }
@@ -84,53 +89,49 @@ export default {
       opacity: Math.min(Math.sqrt(Math.pow(offset.value.x, 2) + Math.pow(offset.value.y, 2)) / 100, 1)
     }))
 
-    const swipeDirection = computed(() => {
-      const absX = Math.abs(offset.value.x)
-      const absY = Math.abs(offset.value.y)
-      if (absX > absY && offset.value.x > 0) return 'right'
-      if (absX > absY && offset.value.x < 0) return 'left'
-      if (absY > absX && offset.value.y > 0) return 'up'
-      return ''
-    })
-
     const touchStart = (event) => {
       startX = event.touches[0].clientX
       startY = event.touches[0].clientY
+      event.preventDefault()
     }
 
     const touchMove = (event) => {
       const currentX = event.touches[0].clientX
       const currentY = event.touches[0].clientY
       handleMove(currentX, currentY)
+      event.preventDefault()
     }
 
-    const touchEnd = () => {
+    const touchEnd = (event) => {
       handleEnd()
+      event.preventDefault()
     }
 
     const mouseDown = (event) => {
       isDragging = true
       startX = event.clientX
       startY = event.clientY
+      event.preventDefault()
     }
 
     const mouseMove = (event) => {
       if (isDragging) {
         handleMove(event.clientX, event.clientY)
       }
+      event.preventDefault()
     }
 
-    const mouseUp = () => {
+    const mouseUp = (event) => {
       if (isDragging) {
         isDragging = false
         handleEnd()
       }
+      event.preventDefault()
     }
 
     const handleMove = (currentX, currentY) => {
       const deltaX = currentX - startX
       const deltaY = startY - currentY
-
       offset.value = { x: deltaX, y: deltaY }
     }
 
@@ -151,9 +152,10 @@ export default {
     return {
       offset,
       imageLoaded,
+      showFullImage,
       cardStyle,
       overlayStyle,
-      swipeDirection,
+      currentAction,
       touchStart,
       touchMove,
       touchEnd,
@@ -167,8 +169,9 @@ export default {
 
 <style scoped>
 .meme-card {
-  width: 100%;
-  height: 100%;
+  aspect-ratio: 3/4;
+  max-width: 90vw;
+  max-height: 80vh;
 }
 
 .reaction {
