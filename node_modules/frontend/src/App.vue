@@ -18,7 +18,7 @@
 </template>
 
 <script>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 
 export default {
   name: 'App',
@@ -34,6 +34,12 @@ export default {
         document.documentElement.classList.remove('dark')
       }
     }
+
+    onMounted(() => {
+        if (isDarkMode.value) {
+          document.documentElement.classList.add('dark')
+        }
+      })
 
     return {
       isDarkMode,
