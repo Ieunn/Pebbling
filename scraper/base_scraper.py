@@ -14,7 +14,7 @@ class BaseScraper:
         self.db = self.client[os.getenv('MONGODB_DB')]
         self.memes_collection = self.db['memes']
         self.storage = StorageProvider()
-        self.max_storage = 5 * 1024 * 1024 * 1024  # 5GB
+        self.max_storage = 250 * 1024 * 1024 * 1024  # 5GB
         self.meme_retention_days = 30
         self.user_agent = UserAgent()
         self.proxies = [
