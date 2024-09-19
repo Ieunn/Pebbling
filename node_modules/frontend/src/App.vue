@@ -28,7 +28,7 @@
         </div>
       </header>
       <main class="mb-8">
-        <div class="relative w-full max-w-md mx-auto h-96">
+        <div class="relative w-full mx-auto" style="aspect-ratio: 3/4; max-width: 90vw; max-height: 80vh;">
           <div v-if="loading" class="absolute inset-0 flex items-center justify-center">
             <p>Loading memes...</p>
           </div>
@@ -285,6 +285,10 @@ export default {
 
         try {
           await axios.post('/api/update_meme_status', { memeId, action })
+          if (action === 'favorite') {
+            // TODO: Add some prompt to notice user added to favorites
+            console.log('Meme added to favorites')
+          }
         } catch (error) {
           console.error(`Error updating meme status:`, error)
         }

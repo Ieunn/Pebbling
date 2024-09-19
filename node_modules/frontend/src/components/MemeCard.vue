@@ -3,6 +3,10 @@
        @touchstart="touchStart" 
        @touchmove="touchMove" 
        @touchend="touchEnd"
+       @mousedown="mouseDown"
+       @mousemove="mouseMove"
+       @mouseup="mouseUp"
+       @mouseleave="mouseUp"
        :style="cardStyle">
     <div v-if="isEmpty" class="flex flex-col items-center justify-center h-full p-4 text-center">
       <p class="text-xl font-semibold mb-2">No more memes available!</p>
@@ -60,14 +64,15 @@ export default {
     const imageLoaded = ref(false)
     let startX = 0
     let startY = 0
+    let isDragging = false
 
     const cardStyle = computed(() => ({
-      transform: `translateX(${offset.value}px) rotate(${offset.value * 0.1}deg)`,
-      transition: offset.value === 0 ? 'transform 0.3s ease-out' : 'none'
+      transform: `translateX(${offset.value}px) translateY(${-swipeUp.value}px) rotate(${offset.value * 0.1}deg)`,
+      transition: (offset.value === 0 && swipeUp.value === 0) ? 'transform 0.3s ease-out' : 'none'
     }))
 
     const overlayStyle = computed(() => ({
-      opacity: Math.min(Math.abs(offset.value) / 100, 1)
+      opacity: Math.min(Math.max(Math.abs(offset.value) / 100, swipeUp.value / 100), 1)
     }))
 
     const touchStart = (event) => {
@@ -78,33 +83,60 @@ export default {
     const touchMove = (event) => {
       const currentX = event.touches[0].clientX
       const currentY = event.touches[0].clientY
+      handleMove(currentX, currentY)
+    }
+
+    const touchEnd = () => {
+      handleEnd()
+    }
+
+    const mouseDown = (event) => {
+      isDragging = true
+      startX = event.clientX
+      startY = event.clientY
+    }
+
+    const mouseMove = (event) => {
+      if (isDragging) {
+        handleMove(event.clientX, event.clientY)
+      }
+    }
+
+    const mouseUp = () => {
+      if (isDragging) {
+        isDragging = false
+        handleEnd()
+      }
+    }
+
+    const handleMove = (currentX, currentY) => {
       const deltaX = currentX - startX
       const deltaY = startY - currentY
 
       if (Math.abs(deltaX) > Math.abs(deltaY)) {
         offset.value = deltaX
-        swipeUp.value = false
-      } else if (deltaY > 50) {
-        swipeUp.value = true
+        swipeUp.value = 0
+      } else {
+        offset.value = 0
+        swipeUp.value = deltaY
       }
-      event.preventDefault()
     }
 
-    const touchEnd = () => {
+    const handleEnd = () => {
       if (props.isEmpty) {
         offset.value = 0
-        swipeUp.value = false
+        swipeUp.value = 0
         return
       }
 
       if (Math.abs(offset.value) > 100) {
         const action = offset.value > 0 ? 'like' : 'dislike'
         emit('swipe', props.meme._id, action)
-      } else if (swipeUp.value) {
+      } else if (swipeUp.value > 100) {
         emit('swipe', props.meme._id, 'favorite')
       } else {
         offset.value = 0
-        swipeUp.value = false
+        swipeUp.value = 0
       }
     }
 
@@ -116,13 +148,22 @@ export default {
       overlayStyle,
       touchStart,
       touchMove,
-      touchEnd
+      touchEnd,
+      mouseDown,
+      mouseMove,
+      mouseUp
     }
   }
 }
 </script>
 
 <style scoped>
+.meme-card {
+  aspect-ratio: 3/4;
+  max-width: 90vw;
+  max-height: 80vh;
+}
+
 .reaction {
   @apply flex flex-col items-center text-4xl font-bold;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
