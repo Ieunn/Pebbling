@@ -35,6 +35,12 @@ export default {
       }
     }
 
+    onMounted(() => {
+        if (isDarkMode.value) {
+          document.documentElement.classList.add('dark')
+        }
+      })
+
     return {
       isDarkMode,
       toggleDarkMode
