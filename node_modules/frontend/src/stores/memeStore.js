@@ -182,7 +182,7 @@ export const useMemeStore = defineStore('meme', {
             this.viewedMemes.push(memeId)
             localStorage.setItem('viewedMemes', JSON.stringify(this.viewedMemes))
           }
-  
+      
           try {
             let favorites = JSON.parse(localStorage.getItem('favorites') || '[]')
             if (action === 'favorite') {
@@ -194,17 +194,14 @@ export const useMemeStore = defineStore('meme', {
               favorites = favorites.filter(id => id !== memeId)
             }
             localStorage.setItem('favorites', JSON.stringify(favorites))
-  
+      
             await axios.post('/api/update_meme_status', { memeId, action })
           } catch (error) {
             console.error(`Error updating meme status:`, error)
           }
         }
-  
-        this.memes.shift()
-        if (this.memes.length < 3) {
-            this.fetchMemes(3)
-        }
-    },
+      
+        this.memes = this.memes.slice(1)
+      },
   },
 })
