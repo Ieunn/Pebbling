@@ -183,17 +183,17 @@ export default {
 
 <style scoped>
 .meme-card {
-  position: absolute;
-  width: 100%;
-  height: 100%;
+  aspect-ratio: 3/4;
   max-width: 90vw;
   max-height: 80vh;
-  aspect-ratio: 3/4;
   margin: auto;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+}
+
+@media (max-width: 768px) {
+  .meme-card {
+    max-width: 95vw;
+    max-height: 70vh;
+  }
 }
 
 .reaction {
@@ -211,10 +211,6 @@ export default {
 }
 
 @media (max-width: 768px) {
-  .meme-card {
-    max-width: 95vw;
-    max-height: 70vh;
-  }
   .meme-info h2 {
     @apply text-lg;
   }
