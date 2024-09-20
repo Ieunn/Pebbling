@@ -17,9 +17,7 @@ export default async function handler(req, res) {
 
       const memes = await memesCollection.aggregate([
         { $match: query },
-        { $sample: { size: 100 } },
-        { $sort: { priority: -1 } },
-        { $limit: parseInt(count) }
+        { $sample: { size: parseInt(count) } }
       ]).toArray();
 
       console.log('Query:', query);

@@ -29,28 +29,31 @@ export const useMemeStore = defineStore('meme', {
       }
     },
     async fetchMemes(count = 5) {
-      this.loading = true
-      this.error = null
-      try {
-        const response = await axios.get('/api/get_memes', {
-          params: { 
-            source: this.selectedSource,
-            exclude: this.viewedMemes,
-            count: count
+        this.loading = true
+        this.error = null
+        try {
+          const response = await axios.get('/api/get_memes', {
+            params: { 
+              source: this.selectedSource,
+              exclude: this.viewedMemes.join(','),
+              count: count
+            }
+          })
+          if (response.data && response.data.length > 0) {
+            const newMemes = response.data.filter(meme => !this.viewedMemes.includes(meme._id))
+            this.memes = [...this.memes, ...newMemes]
           }
-        })
-        if (response.data && response.data.length > 0) {
-          this.memes = response.data
-        } else {
-          this.memes = []
+          
+          if (this.memes.length < count) {
+            await this.fetchMemes(count - this.memes.length)
+          }
+        } catch (err) {
+          console.error('Error fetching memes:', err)
+          this.error = 'Error fetching memes: ' + (err.response?.data?.error || err.message)
+        } finally {
+          this.loading = false
         }
-      } catch (err) {
-        console.error('Error fetching memes:', err)
-        this.error = 'Error fetching memes: ' + (err.response?.data?.error || err.message)
-      } finally {
-        this.loading = false
-      }
-    },
+      },
     async handleSourceChange() {
         if (this.selectedSource === 'Xiaohongshu') {
             this.memes = this.memes.filter((meme) => meme.source === 'Xiaohongshu')
@@ -175,33 +178,33 @@ export const useMemeStore = defineStore('meme', {
     },
     async handleSwipe(memeId, action) {
         if (memeId !== 'empty') {
+          if (!this.viewedMemes.includes(memeId)) {
             this.viewedMemes.push(memeId)
             localStorage.setItem('viewedMemes', JSON.stringify(this.viewedMemes))
-
-            try {
-                let favorites = JSON.parse(localStorage.getItem('favorites') || '[]')
-                if (action === 'favorite') {
-                    if (!favorites.includes(memeId)) {
-                        favorites.push(memeId)
-                        console.log('Meme added to favorites')
-                    }
-                } else if (action === 'dislike') {
-                    favorites = favorites.filter(id => id !== memeId)
-                }
-                localStorage.setItem('favorites', JSON.stringify(favorites))
-
-                await axios.post('/api/update_meme_status', { memeId, action })
-            } catch (error) {
-                console.error(`Error updating meme status:`, error)
+          }
+  
+          try {
+            let favorites = JSON.parse(localStorage.getItem('favorites') || '[]')
+            if (action === 'favorite') {
+              if (!favorites.includes(memeId)) {
+                favorites.push(memeId)
+                console.log('Meme added to favorites')
+              }
+            } else if (action === 'dislike') {
+              favorites = favorites.filter(id => id !== memeId)
             }
+            localStorage.setItem('favorites', JSON.stringify(favorites))
+  
+            await axios.post('/api/update_meme_status', { memeId, action })
+          } catch (error) {
+            console.error(`Error updating meme status:`, error)
+          }
         }
-
-        setTimeout(() => {
-            this.memes.shift()
-            if (this.memes.length < 3) {
-                fetchMemes(3)
-            }
-        }, 300)
+  
+        this.memes.shift()
+        if (this.memes.length < 3) {
+            this.fetchMemes(3)
+        }
     },
   },
 })

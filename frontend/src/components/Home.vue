@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useMemeStore } from '../stores/memeStore'
 import MemeCard from './MemeCard.vue'
 
@@ -57,7 +57,7 @@ export default {
                     
                     setTimeout(async () => {
                     try {
-                        await scrapeMemes();
+                        await memeStore.scrapeMemes();
                         resolve();
                     } catch (error) {
                         reject(error);

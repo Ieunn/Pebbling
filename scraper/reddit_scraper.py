@@ -15,7 +15,7 @@ class RedditScraper(BaseScraper):
 
     def scrape(self):
         subreddit = self.reddit.subreddit('memes')
-        for post in subreddit.hot(limit=50):
+        for post in subreddit.hot(limit=250):
             if post.url.endswith(('.jpg', '.png', '.gif')):
                 response = requests.get(post.url)
                 if response.status_code == 200:
