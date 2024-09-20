@@ -41,3 +41,25 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.aspect-w-3 {
+  position: relative;
+  padding-bottom: 133.33%;
+}
+
+.aspect-w-3 > img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+</style>

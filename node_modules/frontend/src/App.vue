@@ -27,22 +27,30 @@
         <AdComponent />
       </footer>
     </div>
+    <FullScreenImage v-if="fullScreenImage" :image-url="fullScreenImage" @close="fullScreenImage = null" />
   </div>
 </template>
 
 <script>
 import { ref, onMounted } from 'vue'
 import { useMemeStore } from './stores/memeStore'
+import FullScreenImage from './components/FullScreenImage.vue'
 import AdComponent from './components/AdComponent.vue'
 
 export default {
   name: 'App',
   components: {
-    AdComponent
+    AdComponent,
+    FullScreenImage,
   },
   setup() {
+    const fullScreenImage = ref(null)
     const isDarkMode = ref(localStorage.getItem('darkMode') === 'true')
     const memeStore = useMemeStore()
+
+    provide('setFullScreenImage', (imageUrl) => {
+      fullScreenImage.value = imageUrl
+    })
 
     const toggleDarkMode = () => {
       isDarkMode.value = !isDarkMode.value
@@ -64,6 +72,7 @@ export default {
     return {
       isDarkMode,
       toggleDarkMode,
+      fullScreenImage,
       memeStore
     }
   }

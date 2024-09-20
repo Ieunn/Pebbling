@@ -24,7 +24,7 @@
           <h2 class="text-xl font-semibold mb-1">{{ meme.title }}</h2>
           <p class="text-sm opacity-80">Source: {{ meme.source }}</p>
         </div>
-        <button @click="showFullImage = true" class="absolute top-2 right-2 bg-white dark:bg-gray-800 p-2 rounded-full shadow-md">
+        <button @click="showFullScreenImage" class="absolute top-2 right-2 bg-white dark:bg-gray-800 p-2 rounded-full shadow-md z-10">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path>
           </svg>
@@ -43,16 +43,6 @@
       <div v-else-if="currentAction === 'favorite'" class="reaction favorite text-yellow-500">
         <span class="emoji text-6xl">❤️</span>
         <span class="text text-2xl font-bold">LMAO</span>
-      </div>
-    </div>
-    <div v-if="showFullImage" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50" @click="showFullImage = false">
-      <div class="relative max-w-full max-h-full">
-        <img :src="meme.imageUrl" :alt="meme.title" class="max-w-full max-h-full object-contain" />
-        <button @click="showFullImage = false" class="absolute top-4 right-4 bg-white rounded-full p-2">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        </button>
       </div>
     </div>
   </div>
@@ -76,10 +66,15 @@ export default {
   setup(props, { emit }) {
     const offset = ref({ x: 0, y: 0 })
     const imageLoaded = ref(false)
-    const showFullImage = ref(false)
     let startX = 0
     let startY = 0
     let isDragging = false
+
+    const setFullScreenImage = inject('setFullScreenImage')
+
+    const showFullScreenImage = () => {
+      setFullScreenImage(props.meme.imageUrl)
+    }
 
     const currentAction = computed(() => {
       const absX = Math.abs(offset.value.x)
@@ -171,10 +166,10 @@ export default {
     return {
       offset,
       imageLoaded,
-      showFullImage,
       cardStyle,
       overlayStyle,
       currentAction,
+      showFullScreenImage,
       touchStart,
       touchMove,
       touchEnd,
@@ -188,10 +183,17 @@ export default {
 
 <style scoped>
 .meme-card {
-  aspect-ratio: 3/4;
+  position: absolute;
+  width: 100%;
+  height: 100%;
   max-width: 90vw;
   max-height: 80vh;
+  aspect-ratio: 3/4;
   margin: auto;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 
 .reaction {
@@ -209,6 +211,10 @@ export default {
 }
 
 @media (max-width: 768px) {
+  .meme-card {
+    max-width: 95vw;
+    max-height: 70vh;
+  }
   .meme-info h2 {
     @apply text-lg;
   }
