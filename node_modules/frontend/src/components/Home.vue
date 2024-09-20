@@ -1,20 +1,20 @@
 <template>
-    <div class="flex flex-col h-full">
-        <main class="flex-grow relative flex items-center justify-center">
-            <div v-if="memeStore.loading" class="absolute inset-0 flex items-center justify-center">
-                <p>Loading memes...</p>
-            </div>
-            <TransitionGroup v-else name="meme-card" tag="div" class="relative w-full h-full flex items-center justify-center">
+    <div class="flex-grow flex items-center justify-center">
+        <div v-if="memeStore.loading" class="text-center">
+            <p>Loading memes...</p>
+        </div>
+        <div v-else class="relative w-full aspect-[3/4] max-w-sm max-h-[80vh]">
+            <TransitionGroup name="meme-card" tag="div" class="absolute inset-0">
                 <MemeCard 
                 v-for="(meme, index) in displayedMemes" 
-                :key="meme._id || 'empty'"
-                :meme="meme"
-                :is-empty="memeStore.memes.length === 0"
-                :style="{ zIndex: displayedMemes.length - index }"
-                @swipe="handleSwipe"
+                    :key="meme._id || 'empty'"
+                    :meme="meme"
+                    :is-empty="memeStore.memes.length === 0"
+                    :style="{ zIndex: displayedMemes.length - index }"
+                    @swipe="handleSwipe"
                 />
             </TransitionGroup>
-        </main>
+        </div>
     </div>
     <div v-if="memeStore.showAuthModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white p-6 rounded-lg">
@@ -75,7 +75,6 @@ export default {
         }
 
         const handleSwipe = (memeId, action, direction) => {
-            memeStore.handleSwipe(memeId, action)
             const memeElement = document.querySelector(`[data-meme-id="${memeId}"]`)
             if (memeElement) {
                 memeElement.dataset.direction = direction

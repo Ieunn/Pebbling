@@ -1,6 +1,6 @@
 <template>
   <div :class="{'dark': isDarkMode}" class="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white flex flex-col">
-    <div class="max-w-md w-full mx-auto px-4 py-4 flex-grow flex flex-col">
+    <div class="flex-grow flex flex-col max-w-md w-full mx-auto px-4 py-4">
       <header class="flex justify-between items-center mb-4">
         <nav class="flex space-x-4">
           <router-link to="/" class="text-lg font-semibold text-gray-700 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400">Home</router-link>

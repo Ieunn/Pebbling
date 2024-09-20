@@ -183,10 +183,8 @@ export default {
 
 <style scoped>
 .meme-card {
-  aspect-ratio: 3/4;
-  max-width: 90vw;
-  max-height: 80vh;
-  margin: auto;
+  width: 100%;
+  height: 100%;
 }
 
 @media (max-width: 768px) {
