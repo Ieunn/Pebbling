@@ -184,17 +184,18 @@ export const useMemeStore = defineStore('meme', {
           }
       
           try {
-            let favorites = JSON.parse(localStorage.getItem('favorites') || '[]')
+            const memeToSave = this.memes.find(meme => meme._id === memeId)
+      
             if (action === 'favorite') {
-              if (!favorites.includes(memeId)) {
-                favorites.push(memeId)
+              let favorites = JSON.parse(localStorage.getItem('favorites') || '[]')
+              if (!favorites.some(fav => fav._id === memeId)) {
+                favorites.push(memeToSave)
+                localStorage.setItem('favorites', JSON.stringify(favorites))
                 console.log('Meme added to favorites')
               }
-            } else if (action === 'dislike') {
-              favorites = favorites.filter(id => id !== memeId)
+              await axios.post('/api/update_meme_status', { memeId, action: 'like' })
             }
-            localStorage.setItem('favorites', JSON.stringify(favorites))
-      
+            
             await axios.post('/api/update_meme_status', { memeId, action })
           } catch (error) {
             console.error(`Error updating meme status:`, error)
@@ -202,6 +203,9 @@ export const useMemeStore = defineStore('meme', {
         }
       
         this.memes = this.memes.slice(1)
-      },
+        if (this.memes.length < 3) {
+          this.fetchMemes(5 - this.memes.length)
+        }
+    },
   },
 })
