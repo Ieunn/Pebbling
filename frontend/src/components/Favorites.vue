@@ -1,7 +1,11 @@
 <template>
   <div class="container mx-auto px-4 py-8">
     <h2 class="text-3xl font-bold text-center text-gray-800 dark:text-gray-200 mb-8">My Favorites</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    <div v-if="favorites.length === 0" class="text-center text-gray-600 dark:text-gray-400">
+      <p class="text-xl mb-4">You haven't favorited any memes yet.</p>
+      <p>Swipe up on memes you like to add them to your favorites!</p>
+    </div>
+    <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       <div v-for="meme in favorites" :key="meme._id" class="relative w-full aspect-[3/4] max-w-sm max-h-[80vh]">
         <MemeCard 
           :meme="meme"

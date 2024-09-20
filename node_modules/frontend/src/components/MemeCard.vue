@@ -76,18 +76,8 @@ export default {
 
     const setFullScreenImage = inject('setFullScreenImage')
 
-    const showFullScreenImage = () => {
-      setFullScreenImage(props.meme.imageUrl)
-    }
-
     const currentAction = computed(() => {
-      const absX = Math.abs(offset.value.x)
-      const absY = Math.abs(offset.value.y)
-      if (absX > absY) {
-        return offset.value.x > 50 ? 'dislike' : (offset.value.x < -50 ? 'like' : '')
-      } else {
-        return offset.value.y > 50 ? 'favorite' : ''
-      }
+      return getSwipeAction(offset.value.x, offset.value.y).action
     })
 
     const cardStyle = computed(() => ({
@@ -98,6 +88,32 @@ export default {
     const overlayStyle = computed(() => ({
       opacity: Math.min(Math.sqrt(Math.pow(offset.value.x, 2) + Math.pow(offset.value.y, 2)) / 100, 1)
     }))
+
+    const getSwipeAction = (offsetX, offsetY) => {
+      const absX = Math.abs(offsetX)
+      const absY = Math.abs(offsetY)
+      const distance = Math.sqrt(Math.pow(offsetX, 2) + Math.pow(offsetY, 2))
+
+      if (distance <= 50) {
+        return { action: '', direction: '' }
+      }
+
+      if (absX > absY) {
+        return {
+          action: offsetX > 50 ? 'dislike' : (offsetX < -50 ? 'like' : ''),
+          direction: offsetX > 0 ? 'right' : 'left'
+        }
+      } else {
+        return {
+          action: offsetY < -50 ? 'favorite' : '',
+          direction: offsetY > 0 ? 'down' : 'up'
+        }
+      }
+    }
+
+    const showFullScreenImage = () => {
+      setFullScreenImage(props.meme.imageUrl)
+    }
 
     const touchStart = (event) => {
       startX = event.touches[0].clientX
@@ -151,18 +167,11 @@ export default {
         return
       }
 
-      const distance = Math.sqrt(Math.pow(offset.value.x, 2) + Math.pow(offset.value.y, 2))
-      if (distance > 100) {
-        const direction = Math.abs(offset.value.x) > Math.abs(offset.value.y)
-          ? (offset.value.x > 0 ? 'right' : 'left')
-          : (offset.value.y > 0 ? 'down' : 'up')
-        
-        if (direction === 'down') {
-          offset.value = { x: 0, y: 0 }
-        } else {
-          isLeaving.value = true
-          emit('swipe', props.meme._id, currentAction.value, direction)
-        }
+      const { action, direction } = getSwipeAction(offset.value.x, offset.value.y)
+
+      if (action) {
+        isLeaving.value = true
+        emit('swipe', props.meme._id, action, direction)
       } else {
         offset.value = { x: 0, y: 0 }
       }
