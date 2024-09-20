@@ -6,28 +6,29 @@
       <p>Swipe up on memes you like to add them to your favorites!</p>
     </div>
     <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-      <div v-for="meme in favorites" :key="meme._id" class="relative w-full aspect-[3/4] max-w-sm max-h-[80vh]">
-        <MemeCard 
-          :meme="meme"
-          :is-empty="false"
-          @swipe="removeFavorite(meme._id)"
-        />
-      </div>
+      <FavoriteMemeCard
+        v-for="meme in favorites"
+        :key="meme._id"
+        :meme="meme"
+        @remove-favorite="removeFavorite"
+        @show-full-screen="showFullScreenImage"
+      />
     </div>
   </div>
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
-import MemeCard from './MemeCard.vue'
+import { ref, onMounted, inject } from 'vue'
+import FavoriteMemeCard from './FavoriteMemeCard.vue'
 
 export default {
   name: 'Favorites',
   components: {
-    MemeCard
+    FavoriteMemeCard
   },
   setup() {
     const favorites = ref([])
+    const setFullScreenImage = inject('setFullScreenImage')
 
     const fetchFavorites = () => {
       const storedFavorites = localStorage.getItem('favorites')
@@ -39,11 +40,16 @@ export default {
       localStorage.setItem('favorites', JSON.stringify(favorites.value))
     }
 
+    const showFullScreenImage = (imageUrl) => {
+      setFullScreenImage(imageUrl)
+    }
+
     onMounted(fetchFavorites)
 
     return {
       favorites,
-      removeFavorite
+      removeFavorite,
+      showFullScreenImage
     }
   }
 }

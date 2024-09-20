@@ -105,8 +105,8 @@ export default {
         }
       } else {
         return {
-          action: offsetY < -50 ? 'favorite' : '',
-          direction: offsetY > 0 ? 'down' : 'up'
+          action: offsetY > 50 ? 'favorite' : '',
+          direction: offsetY > 0 ? 'up' : 'down'
         }
       }
     }
