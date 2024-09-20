@@ -4,14 +4,14 @@
             <div v-if="memeStore.loading" class="absolute inset-0 flex items-center justify-center">
                 <p>Loading memes...</p>
             </div>
-            <TransitionGroup v-else name="meme-card" tag="div" class="relative w-full h-full">
+            <TransitionGroup v-else name="meme-card" tag="div" class="relative w-full h-full flex items-center justify-center">
                 <MemeCard 
-                    v-for="(meme, index) in displayedMemes" 
-                    :key="meme._id || 'empty'"
-                    :meme="meme"
-                    :is-empty="memeStore.memes.length === 0"
-                    :style="{ zIndex: displayedMemes.length - index }"
-                    @swipe="handleSwipe"
+                v-for="(meme, index) in displayedMemes" 
+                :key="meme._id || 'empty'"
+                :meme="meme"
+                :is-empty="memeStore.memes.length === 0"
+                :style="{ zIndex: displayedMemes.length - index }"
+                @swipe="handleSwipe"
                 />
             </TransitionGroup>
         </main>
@@ -80,6 +80,9 @@ export default {
             if (memeElement) {
                 memeElement.dataset.direction = direction
             }
+            setTimeout(() => {
+                memeStore.handleSwipe(memeId, action)
+            }, 500)
         }
 
         onMounted(() => {
@@ -97,12 +100,10 @@ export default {
 }
 </script>
   
-<style>
+<style scoped>
 .meme-card-leave-active {
-  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.5s ease-out;
   position: absolute;
-  width: 100%;
-  height: 100%;
 }
 
 .meme-card-leave-to[data-direction="left"] {
