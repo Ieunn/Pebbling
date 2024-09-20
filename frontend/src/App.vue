@@ -32,7 +32,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, provide } from 'vue'
 import { useMemeStore } from './stores/memeStore'
 import FullScreenImage from './components/FullScreenImage.vue'
 import AdComponent from './components/AdComponent.vue'
