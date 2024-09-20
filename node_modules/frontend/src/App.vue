@@ -1,6 +1,6 @@
 <template>
-  <div :class="{'dark': isDarkMode}" class="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white">
-    <div class="max-w-md mx-auto px-4 py-4">
+  <div :class="{'dark': isDarkMode}" class="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white flex flex-col">
+    <div class="max-w-md w-full mx-auto px-4 py-4 flex-grow flex flex-col">
       <header class="flex justify-between items-center mb-4">
         <nav class="flex space-x-4">
           <router-link to="/" class="text-lg font-semibold text-gray-700 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400">Home</router-link>
@@ -22,7 +22,10 @@
           </button>
         </div>
       </header>
-      <router-view></router-view>
+      <router-view class="flex-grow flex flex-col"></router-view>
+      <footer class="mt-4 text-center">
+        <AdComponent />
+      </footer>
     </div>
   </div>
 </template>
@@ -30,9 +33,13 @@
 <script>
 import { ref, onMounted } from 'vue'
 import { useMemeStore } from './stores/memeStore'
+import AdComponent from './components/AdComponent.vue'
 
 export default {
   name: 'App',
+  components: {
+    AdComponent
+  },
   setup() {
     const isDarkMode = ref(localStorage.getItem('darkMode') === 'true')
     const memeStore = useMemeStore()

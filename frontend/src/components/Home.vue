@@ -1,23 +1,20 @@
 <template>
-    <div class="flex flex-col h-screen">
-      <main class="flex-grow relative">
+    <div class="flex flex-col h-full">
+      <main class="flex-grow relative flex items-center justify-center p-4">
         <div v-if="memeStore.loading" class="absolute inset-0 flex items-center justify-center">
           <p>Loading memes...</p>
         </div>
-        <TransitionGroup v-else name="meme-card" tag="div" class="absolute inset-0">
-          <MemeCard 
-            v-for="(meme, index) in displayedMemes" 
-            :key="meme._id || 'empty'"
-            :meme="meme"
-            :is-empty="memeStore.memes.length === 0"
-            :style="{ zIndex: displayedMemes.length - index }"
-            @swipe="memeStore.handleSwipe"
-          />
+        <TransitionGroup v-else name="meme-card" tag="div" class="relative w-full max-w-sm aspect-[3/4] mx-auto">
+            <MemeCard 
+                v-for="(meme, index) in displayedMemes" 
+                :key="meme._id || 'empty'"
+                :meme="meme"
+                :is-empty="memeStore.memes.length === 0"
+                :style="{ zIndex: displayedMemes.length - index }"
+                @swipe="handleSwipe"
+            />
         </TransitionGroup>
       </main>
-      <footer class="mt-4 text-center">
-        <AdComponent />
-      </footer>
     </div>
     <div v-if="memeStore.showAuthModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white p-6 rounded-lg">
@@ -33,13 +30,11 @@
 import { computed, onMounted } from 'vue'
 import { useMemeStore } from '../stores/memeStore'
 import MemeCard from './MemeCard.vue'
-import AdComponent from './AdComponent.vue'
 
 export default {
     name: 'Home',
     components: {
-        MemeCard,
-        AdComponent
+        MemeCard
     },
     setup() {
         const memeStore = useMemeStore()
@@ -79,6 +74,14 @@ export default {
             memeStore.memes = []
         }
 
+        const handleSwipe = (memeId, action, direction) => {
+            memeStore.handleSwipe(memeId, action)
+            const memeElement = document.querySelector(`[data-meme-id="${memeId}"]`)
+            if (memeElement) {
+                memeElement.dataset.direction = direction
+            }
+        }
+
         onMounted(() => {
             memeStore.fetchMemes()
         })
@@ -88,6 +91,7 @@ export default {
             displayedMemes,
             authXiaohongshu,
             cancelAuth,
+            handleSwipe
         }
     }
 }
@@ -95,22 +99,24 @@ export default {
   
 <style>
 .meme-card-leave-active {
-    transition: all 0.3s ease-out;
-    position: absolute;
-    width: 100%;
-    height: 100%;
-}
-
-.meme-card-leave-to {
-    opacity: 0;
-    transform: translateX(100%) rotate(10deg);
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: absolute;
+  width: 100%;
+  height: 100%;
 }
 
 .meme-card-leave-to[data-direction="left"] {
-    transform: translateX(-100%) rotate(-10deg);
+  transform: translateX(-120%) rotate(-10deg);
+  opacity: 0;
+}
+
+.meme-card-leave-to[data-direction="right"] {
+  transform: translateX(120%) rotate(10deg);
+  opacity: 0;
 }
 
 .meme-card-leave-to[data-direction="up"] {
-    transform: translateY(-100%) rotate(5deg);
+  transform: translateY(-120%) rotate(5deg);
+  opacity: 0;
 }
 </style>

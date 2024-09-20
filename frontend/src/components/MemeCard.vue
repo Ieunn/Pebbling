@@ -19,12 +19,16 @@
       <template v-else>
         <img :src="meme.imageUrl" :alt="meme.title" @load="imageLoaded = true" 
              class="w-full h-full object-contain transition-opacity duration-300"
-             :class="{ 'opacity-0': !imageLoaded, 'opacity-100': imageLoaded }"
-             @click="showFullImage = true" />
+             :class="{ 'opacity-0': !imageLoaded, 'opacity-100': imageLoaded }" />
         <div class="meme-info absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black to-transparent text-white">
           <h2 class="text-xl font-semibold mb-1">{{ meme.title }}</h2>
           <p class="text-sm opacity-80">Source: {{ meme.source }}</p>
         </div>
+        <button @click="showFullImage = true" class="absolute top-2 right-2 bg-white dark:bg-gray-800 p-2 rounded-full shadow-md">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path>
+          </svg>
+        </button>
       </template>
     </template>
     <div class="reaction-overlay absolute inset-0 flex justify-center items-center pointer-events-none" :style="overlayStyle">
@@ -41,8 +45,15 @@
         <span class="text text-2xl font-bold">LMAO</span>
       </div>
     </div>
-    <div v-if="showFullImage" class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50" @click="showFullImage = false">
-      <img :src="meme.imageUrl" :alt="meme.title" class="max-w-full max-h-full object-contain" />
+    <div v-if="showFullImage" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50" @click="showFullImage = false">
+      <div class="relative max-w-full max-h-full">
+        <img :src="meme.imageUrl" :alt="meme.title" class="max-w-full max-h-full object-contain" />
+        <button @click="showFullImage = false" class="absolute top-4 right-4 bg-white rounded-full p-2">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -74,7 +85,7 @@ export default {
       const absX = Math.abs(offset.value.x)
       const absY = Math.abs(offset.value.y)
       if (absX > absY) {
-        return offset.value.x > 50 ? 'like' : (offset.value.x < -50 ? 'dislike' : '')
+        return offset.value.x > 50 ? 'dislike' : (offset.value.x < -50 ? 'like' : '')
       } else {
         return offset.value.y > 50 ? 'favorite' : ''
       }
@@ -143,7 +154,15 @@ export default {
 
       const distance = Math.sqrt(Math.pow(offset.value.x, 2) + Math.pow(offset.value.y, 2))
       if (distance > 100) {
-        emit('swipe', props.meme._id, currentAction.value)
+        const direction = Math.abs(offset.value.x) > Math.abs(offset.value.y)
+          ? (offset.value.x > 0 ? 'right' : 'left')
+          : (offset.value.y > 0 ? 'down' : 'up')
+        
+        if (direction === 'down') {
+          offset.value = { x: 0, y: 0 }
+        } else {
+          emit('swipe', props.meme._id, currentAction.value, direction)
+        }
       } else {
         offset.value = { x: 0, y: 0 }
       }
@@ -172,6 +191,7 @@ export default {
   aspect-ratio: 3/4;
   max-width: 90vw;
   max-height: 80vh;
+  margin: auto;
 }
 
 .reaction {
